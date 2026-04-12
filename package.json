@@ -1,0 +1,56 @@
+{
+  "name": "nerdfx-mcp-server",
+  "version": "1.0.0",
+  "description": "MCP server for AI filmmaking — shot analysis, model comparison, prompt engineering, production estimation, and character consistency guidance powered by NerdFX AI",
+  "type": "module",
+  "main": "index.js",
+  "bin": {
+    "nerdfx-mcp-server": "./index.js"
+  },
+  "scripts": {
+    "start": "node index.js",
+    "check": "node --check index.js"
+  },
+  "keywords": [
+    "mcp",
+    "mcp-server",
+    "model-context-protocol",
+    "ai-filmmaking",
+    "ai-video",
+    "runway",
+    "kling",
+    "sora",
+    "veo",
+    "claude",
+    "cursor",
+    "windsurf",
+    "ai-cinematography",
+    "text-to-video",
+    "prompt-engineering",
+    "ai-film-production",
+    "generative-video",
+    "nerdfx"
+  ],
+  "author": "NerdFX AI <hello@nerdfx.ai> (https://nerdfx.ai)",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nerdfx/nerdfx-mcp-server"
+  },
+  "homepage": "https://nerdfx.ai",
+  "bugs": {
+    "url": "https://github.com/nerdfx/nerdfx-mcp-server/issues"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.1"
+  },
+  "files": [
+    "index.js",
+    "README.md",
+    "smithery.yaml",
+    "LICENSE"
+  ]
+}
