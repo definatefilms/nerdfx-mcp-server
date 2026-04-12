@@ -6,13 +6,18 @@ import { z } from "zod";
 
 const server = new McpServer({
   name: "nerdfx-mcp-server",
-  version: "1.0.0",
+  version: "1.1.0",
 });
+
+// ============================================================
+// Register all tools on a given McpServer instance
+// ============================================================
+function registerTools(srv) {
 
 // ============================================================
 // TOOL 1: analyze_shot
 // ============================================================
-server.tool(
+srv.tool(
   "analyze_shot",
   "Analyze a shot description and get cinematography recommendations: camera angle, lens, lighting, movement, and which AI video model (Runway/Kling/Sora/Veo) is best suited for it.",
   {
@@ -163,7 +168,7 @@ server.tool(
 // ============================================================
 // TOOL 2: compare_ai_models
 // ============================================================
-server.tool(
+srv.tool(
   "compare_ai_models",
   "Compare AI video generation models (Runway Gen-4, Kling 2.0, Sora, Veo 3) for a specific filmmaking use case. Returns pricing, quality ratings, pros/cons, and recommendations.",
   {
@@ -307,7 +312,7 @@ server.tool(
 // ============================================================
 // TOOL 3: character_consistency_guide
 // ============================================================
-server.tool(
+srv.tool(
   "character_consistency_guide",
   "Get a detailed guide on maintaining character consistency across AI-generated video shots. Covers reference images, face-locking, model-specific features, and workflow strategies.",
   {
@@ -446,7 +451,7 @@ server.tool(
 // ============================================================
 // TOOL 4: estimate_production
 // ============================================================
-server.tool(
+srv.tool(
   "estimate_production",
   "Estimate the production cost, timeline, and shot breakdown for an AI-generated film or video project. Takes film length, visual style, and budget level.",
   {
@@ -588,7 +593,7 @@ server.tool(
 // ============================================================
 // TOOL 5: prompt_engineer
 // ============================================================
-server.tool(
+srv.tool(
   "prompt_engineer",
   "Generate an optimized AI video generation prompt using the SCALE framework (Subject, Camera, Atmosphere, Lighting, Extras). Tailored for Runway Gen-4, Kling 2.0, Sora, or Veo 3.",
   {
@@ -788,12 +793,115 @@ server.tool(
   }
 );
 
+
+} // end registerTools
+
+// Register tools on the global server (used for stdio mode)
+registerTools(server);
+
 // ============================================================
-// START SERVER
+// START SERVER — Dual transport: stdio (local) + HTTP (remote)
 // ============================================================
 async function main() {
-  const transport = new StdioServerTransport();
-  await server.connect(transport);
+  const useHttp = process.argv.includes("--http") || process.env.PORT;
+
+  if (useHttp) {
+    // Streamable HTTP mode — for remote deployment (Smithery, etc.)
+    const { StreamableHTTPServerTransport } = await import(
+      "@modelcontextprotocol/sdk/server/streamableHttp.js"
+    );
+    const { createMcpExpressApp } = await import(
+      "@modelcontextprotocol/sdk/server/express.js"
+    );
+
+    const PORT = parseInt(process.env.PORT || "3000", 10);
+    const app = createMcpExpressApp({ host: "0.0.0.0" });
+
+    // Health check for hosting providers
+    app.get("/", (_req, res) => {
+      res.json({
+        name: "nerdfx-mcp-server",
+        version: "1.1.0",
+        status: "ok",
+        transport: "streamable-http",
+        endpoint: "/mcp",
+      });
+    });
+
+    // Health check endpoint
+    app.get("/health", (_req, res) => {
+      res.json({ status: "ok" });
+    });
+
+    // MCP Streamable HTTP endpoint (stateless — new server per request)
+    app.post("/mcp", async (req, res) => {
+      // Create a fresh server + transport per request (stateless)
+      const { McpServer: McpServerClass } = await import(
+        "@modelcontextprotocol/sdk/server/mcp.js"
+      );
+
+      const reqServer = new McpServerClass({
+        name: "nerdfx-mcp-server",
+        version: "1.1.0",
+      });
+
+      // Re-register all tools on the per-request server
+      registerTools(reqServer);
+
+      try {
+        const transport = new StreamableHTTPServerTransport({
+          sessionIdGenerator: undefined,
+        });
+        await reqServer.connect(transport);
+        await transport.handleRequest(req, res, req.body);
+        res.on("close", () => {
+          transport.close();
+          reqServer.close();
+        });
+      } catch (error) {
+        console.error("Error handling MCP request:", error);
+        if (!res.headersSent) {
+          res.status(500).json({
+            jsonrpc: "2.0",
+            error: { code: -32603, message: "Internal server error" },
+            id: null,
+          });
+        }
+      }
+    });
+
+    // Reject GET/DELETE on /mcp for stateless mode
+    app.get("/mcp", (_req, res) => {
+      res.writeHead(405).end(
+        JSON.stringify({
+          jsonrpc: "2.0",
+          error: { code: -32000, message: "Method not allowed." },
+          id: null,
+        })
+      );
+    });
+
+    app.delete("/mcp", (_req, res) => {
+      res.writeHead(405).end(
+        JSON.stringify({
+          jsonrpc: "2.0",
+          error: { code: -32000, message: "Method not allowed." },
+          id: null,
+        })
+      );
+    });
+
+    app.listen(PORT, "0.0.0.0", () => {
+      console.log(
+        `NerdFX MCP Server (Streamable HTTP) listening on port ${PORT}`
+      );
+      console.log(`MCP endpoint: http://0.0.0.0:${PORT}/mcp`);
+    });
+  } else {
+    // stdio mode — for local use (npx, Claude Desktop, Cursor, etc.)
+    const transport = new StdioServerTransport();
+    await server.connect(transport);
+  }
 }
 
 main().catch((error) => {
