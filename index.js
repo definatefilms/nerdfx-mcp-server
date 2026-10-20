@@ -19,7 +19,7 @@ function registerTools(srv) {
 // ============================================================
 srv.tool(
   "analyze_shot",
-  "Analyze a shot description and get cinematography recommendations: camera angle, lens, lighting, movement, and which AI video model (Runway/Kling/Sora/Veo) is best suited for it.",
+  "Offline advisory shot analysis from built-in rules: camera angle, lens, lighting, movement, and AI video model suggestions. Returns text only; does not generate media, call providers, or spend credits.",
   {
     description: z.string().describe("Describe the shot you want to create, e.g. 'a woman walking through a neon-lit Tokyo alley at night' or 'aerial drone shot of a castle on a cliff at sunset'"),
   },
@@ -170,7 +170,7 @@ srv.tool(
 // ============================================================
 srv.tool(
   "compare_ai_models",
-  "Compare AI video generation models (Runway Gen-4, Kling 2.0, Sora, Veo 3) for a specific filmmaking use case. Returns pricing, quality ratings, pros/cons, and recommendations.",
+  "Offline advisory comparison of Runway Gen-4, Kling 2.0, Sora, and Veo 3 from built-in reference data. Pricing, ratings, and limits are illustrative, not live or verified current. Returns text only; does not generate media, call providers, or spend credits.",
   {
     use_case: z.string().describe("The filmmaking use case to compare models for, e.g. 'action scene', 'dialogue close-up', 'landscape establishing shot', 'product beauty shot', 'music video'"),
   },
@@ -314,7 +314,7 @@ srv.tool(
 // ============================================================
 srv.tool(
   "character_consistency_guide",
-  "Get a detailed guide on maintaining character consistency across AI-generated video shots. Covers reference images, face-locking, model-specific features, and workflow strategies.",
+  "Offline advisory guide to character consistency: reference images, model-specific features, and workflow strategies. Returns text only; does not store characters, upload references, generate media, call providers, or spend credits.",
   {
     character_count: z.number().int().min(1).max(20).describe("Number of distinct characters in the project (1-20)"),
     project_type: z.string().describe("Type of project: 'short film', 'feature', 'commercial', 'music video', 'web series', 'social content'"),
@@ -453,7 +453,7 @@ srv.tool(
 // ============================================================
 srv.tool(
   "estimate_production",
-  "Estimate the production cost, timeline, and shot breakdown for an AI-generated film or video project. Takes film length, visual style, and budget level.",
+  "Offline advisory estimate of production cost, timeline, and shot breakdown from film length, visual style, and budget level. Uses illustrative built-in assumptions, not a live quote. Returns text only; does not generate media, call providers, or spend credits.",
   {
     length_minutes: z.number().min(0.25).max(120).describe("Length of the final video in minutes (0.25 for a 15-second clip up to 120 for a feature)"),
     style: z.string().describe("Visual style: 'cinematic narrative', 'documentary', 'commercial', 'music video', 'anime', 'social media', 'experimental'"),
@@ -595,7 +595,7 @@ srv.tool(
 // ============================================================
 srv.tool(
   "prompt_engineer",
-  "Generate an optimized AI video generation prompt using the SCALE framework (Subject, Camera, Atmosphere, Lighting, Extras). Tailored for Runway Gen-4, Kling 2.0, Sora, or Veo 3.",
+  "Draft an offline advisory text prompt using the SCALE framework (Subject, Camera, Atmosphere, Lighting, Extras) for Runway Gen-4, Kling 2.0, Sora, or Veo 3. Returns text only; does not submit the prompt, generate media, call providers, or spend credits.",
   {
     scene_description: z.string().describe("Describe the scene you want to generate, e.g. 'a detective walks into a dimly lit bar in 1940s noir style'"),
     target_model: z.enum(["runway", "kling", "sora", "veo"]).describe("Target AI model: 'runway' (Gen-4), 'kling' (2.0), 'sora', or 'veo' (3)"),

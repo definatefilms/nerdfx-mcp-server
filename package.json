@@ -1,7 +1,7 @@
 {
   "name": "nerdfx-mcp-server",
   "version": "1.1.0",
-  "description": "MCP server for AI filmmaking — shot analysis, model comparison, prompt engineering, production estimation, and character consistency guidance powered by NerdFX AI",
+  "description": "Offline advisory MCP tools for AI filmmaking: shot analysis, model comparison, prompt drafting, production estimates, and character consistency guidance. Does not generate media or spend credits.",
   "type": "module",
   "main": "index.js",
   "bin": {
@@ -10,7 +10,8 @@
   "scripts": {
     "start": "node index.js",
     "start:http": "PORT=3000 node index.js",
-    "check": "node --check index.js"
+    "check": "node --check index.js",
+    "test": "node --test"
   },
   "keywords": [
     "mcp",
@@ -36,11 +37,11 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/nerdfx/nerdfx-mcp-server"
+    "url": "https://github.com/definatefilms/nerdfx-mcp-server"
   },
   "homepage": "https://nerdfx.ai",
   "bugs": {
-    "url": "https://github.com/nerdfx/nerdfx-mcp-server/issues"
+    "url": "https://github.com/definatefilms/nerdfx-mcp-server/issues"
   },
   "engines": {
     "node": ">=18.0.0"

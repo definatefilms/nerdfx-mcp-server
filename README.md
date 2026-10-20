@@ -1,24 +1,39 @@
 # nerdfx-mcp-server
 
-MCP (Model Context Protocol) server for AI filmmaking. Get expert cinematography analysis, AI video model comparisons, prompt engineering, production estimates, and character consistency guidance — all from your AI assistant.
+Offline advisory MCP (Model Context Protocol) server for AI filmmaking. Get text-based cinematography suggestions, model comparisons, prompt drafts, production estimates, and character consistency guidance from built-in rules and reference data.
 
 Built by [NerdFX AI](https://nerdfx.ai) — the model-agnostic AI filmmaking platform.
 
+Source: [definatefilms/nerdfx-mcp-server](https://github.com/definatefilms/nerdfx-mcp-server).
+Report public-package bugs at [GitHub Issues](https://github.com/definatefilms/nerdfx-mcp-server/issues).
+
+**This package does not generate images, video, or audio.** It does not authenticate to NerdFX, call model providers, upload references, manage generation jobs, or spend credits. Installing it does not connect the separate authenticated NerdFX generation integration.
+
 ## What This Does
 
-When connected to an AI assistant (Claude, Cursor, Windsurf, etc.), this server provides 5 specialized tools that help with AI video production:
+When connected to an AI assistant (Claude, Cursor, Windsurf, etc.), this server provides exactly 5 advisory tools. All return text:
 
 | Tool | What It Does |
 |------|-------------|
-| `analyze_shot` | Analyzes a shot description and recommends camera angle, lens, lighting, and which AI model (Runway/Kling/Sora/Veo) is best |
-| `compare_ai_models` | Compares Runway Gen-4, Kling 2.0, Sora, and Veo 3 for a specific use case with pricing and quality scores |
+| `analyze_shot` | Suggests camera angle, lens, lighting, and an AI model using built-in rules |
+| `compare_ai_models` | Compares built-in model reference data, with illustrative pricing and quality scores |
 | `character_consistency_guide` | Detailed guide on maintaining character consistency across AI-generated shots |
-| `estimate_production` | Full production estimate: shot count, model mix, cost breakdown, and timeline |
-| `prompt_engineer` | Generates optimized prompts using the SCALE framework for any target model |
+| `estimate_production` | Estimates shot count, model mix, cost, and timeline from fixed assumptions |
+| `prompt_engineer` | Drafts text prompts using the SCALE framework for the four supported model labels |
+
+Model names, capabilities, prices, limits, and quality scores are bundled reference data, not live provider lookups or independently validated benchmarks. Verify current provider documentation and pricing before relying on them for a production decision. Estimates are not quotes or account-balance checks.
+
+### Choosing the right capability
+
+- Planning a shot, comparing reference information, drafting a prompt, or estimating a project: use this public advisory package.
+- Creating or editing media, uploading reference assets, checking a generation job, or using credits: use the separate authenticated NerdFX product integration configured for your account. Its permissions, credit limits, and approval requirements apply; these actions are not available here.
+- Do not treat an advisory response, a drafted prompt, or a production estimate as evidence that a generation job was submitted or completed.
 
 ## Quick Start
 
 ### Install
+
+The public package is [nerdfx-mcp-server on npm](https://www.npmjs.com/package/nerdfx-mcp-server). Use either the optional global install below or the `npx` configuration for your client; both are not required.
 
 ```bash
 npm install -g nerdfx-mcp-server
@@ -69,11 +84,18 @@ Add to your Windsurf MCP configuration:
 }
 ```
 
-### Smithery
+### Run from source
 
 ```bash
-npx @smithery/cli install nerdfx-mcp-server --client claude
+git clone https://github.com/definatefilms/nerdfx-mcp-server.git
+cd nerdfx-mcp-server
+npm ci --ignore-scripts
+npm run check
+npm test
+node index.js
 ```
+
+The included `smithery.yaml` describes a stdio launch configuration. Its presence alone does not establish a published Smithery listing or a hosted service URL.
 
 ## Tools
 
@@ -130,7 +152,7 @@ Estimate production costs and timeline.
 
 ### prompt_engineer
 
-Generate an optimized prompt for a specific AI model.
+Draft a text prompt for a specific AI model. The prompt is returned for you to review and use elsewhere; it is not submitted for generation.
 
 **Parameters:**
 - `scene_description` (string, required) — Describe the scene you want
@@ -141,24 +163,25 @@ Generate an optimized prompt for a specific AI model.
 ## Requirements
 
 - Node.js 18+
-- No API keys needed — all tools work offline with built-in knowledge
+- No API keys needed for these advisory tools
+- Installation may require network access; tool execution uses built-in knowledge without outbound provider requests
 
 ## How It Works
 
 This is a [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) server. MCP is an open standard that lets AI assistants connect to external tools. When you add this server to your AI assistant, it gains access to specialized AI filmmaking knowledge.
 
-The server runs locally on your machine, communicates over stdio, and requires no API keys or network access.
+By default, the server runs locally over stdio. Leave `PORT` unset and do not pass `--http` for the desktop configurations above.
+
+### Optional HTTP transport
+
+Setting `PORT` or passing `--http` selects the existing stateless Streamable HTTP transport. It exposes the same five advisory tools via `POST /mcp`, with health responses at `/` and `/health`. `GET /mcp` and `DELETE /mcp` return HTTP 405.
+
+This mode binds to `0.0.0.0` and does not implement application authentication. Keep it on a trusted network or put appropriate access controls in front of it before exposing it. A locally hosted `/mcp` path is not an authenticated NerdFX generation endpoint.
 
 ## About NerdFX
 
-[NerdFX](https://nerdfx.ai) is a model-agnostic AI filmmaking platform that routes each shot to the optimal AI video model (Runway, Kling, Sora, Veo) based on the shot requirements. Features include:
-
-- Automatic model selection and prompt optimization
-- Character profile management for consistency
-- Batch generation across multiple models
-- Production pipeline management from storyboard to final render
-- Cost tracking and optimization
+[NerdFX](https://nerdfx.ai) is a separate filmmaking product. Product links and feature references in advisory responses do not make those features available through this package. Consult the product and your configured authenticated integration for its supported capabilities and account requirements.
 
 ## License
 
-MIT
+This public package and its included documentation are licensed under [MIT](LICENSE). This license does not cover the separate proprietary NerdFX product, authenticated integrations, or third-party model services.
