@@ -1,0 +1,42 @@
+name: Public package checks
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Syntax, advisory tests, and package
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out the candidate
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "24"
+          package-manager-cache: false
+
+      # These checks need no dependency install, provider credentials, or server.
+      # The tests cover advisory contracts/handlers, not SDK transport integration.
+      - name: Check JavaScript syntax
+        run: npm run check --ignore-scripts
+
+      - name: Run advisory contract and handler tests
+        run: npm test --ignore-scripts
+
+      - name: Inspect package contents without lifecycle scripts
+        run: npm pack --dry-run --ignore-scripts --json
